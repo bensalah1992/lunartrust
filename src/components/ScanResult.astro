@@ -1,0 +1,524 @@
+---
+const CHECK_IDS = ["ssl", "domainAge", "safebrowsing", "wayback"] as const;
+---
+
+<section
+  id="scan-result"
+  class="scan-result hidden"
+  aria-live="polite"
+  aria-label="Scan results"
+>
+  <div class="result-inner">
+    <p class="scan-label" id="scan-label-outer">Scanning: <span class="mono" id="scan-domain"></span></p>
+
+    <div class="score-box" id="score-box">
+      <div id="score-loading">
+        <p class="scanning-text">Scanning…</p>
+      </div>
+      <div class="score-error hidden" id="score-error">
+        <p class="error-title">Could not reach this website</p>
+        <p class="error-sub">Check the URL and try again</p>
+      </div>
+      <div class="score-final hidden" id="score-final">
+        <div class="score-badge" id="score-badge">
+          <span class="score-dot" id="score-dot"></span>
+          <span class="score-level-text" id="score-level-text"></span>
+        </div>
+        <h2 id="score-headline"></h2>
+        <p class="score-subline" id="score-subline"></p>
+      </div>
+    </div>
+
+    <div class="checks-grid">
+      {
+        CHECK_IDS.map((id) => (
+          <div class="check-card" data-check={id}>
+            <div class="card-shimmer">
+              <div class="shimmer-line shimmer-title" />
+              <div class="shimmer-line shimmer-text" />
+            </div>
+            <div class="card-content hidden">
+              <div class="card-main">
+                <div class="card-left">
+                  <span class="status-dot" />
+                  <div class="card-text">
+                    <p class="card-title" />
+                    <p class="card-summary" />
+                  </div>
+                </div>
+                <button class="details-btn" aria-expanded="false">
+                  Details
+                  <svg
+                    class="chevron"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 9l6 6 6-6"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="card-details hidden">
+                <div class="detail-tiles" />
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { buildScanResult } from "../lib/scoring";
+  import type { CheckResult, ScoreLevel } from "../types/scan";
+
+  type CheckId = "ssl" | "domainAge" | "safebrowsing" | "wayback";
+
+
+  const CHECK_ORDER: CheckId[] = ["ssl", "domainAge", "safebrowsing", "wayback"];
+  const REVEAL_DELAYS = [300, 600, 1200, 1800];
+  const SCORE_DELAY = 1900;
+
+  const SCORE_LABELS: Record<ScoreLevel, string> = {
+    trusted: "TRUSTED",
+    warning: "WARNING",
+    danger: "DANGER",
+    unknown: "UNKNOWN",
+  };
+
+  const SCORE_COLORS: Record<ScoreLevel, string> = {
+    trusted: "var(--color-signal-green)",
+    warning: "var(--color-signal-yellow)",
+    danger: "var(--color-signal-red)",
+    unknown: "var(--color-text-muted)",
+  };
+
+  document.addEventListener("scan:start", (e: Event) => {
+    const { url } = (e as CustomEvent<{ url: string }>).detail;
+    startScan(url).catch(() => showError());
+  });
+
+  async function startScan(url: string) {
+    let domain: string;
+    try {
+      domain = new URL(url).hostname;
+    } catch {
+      domain = url;
+    }
+
+    const section = document.getElementById("scan-result")!;
+    const scoreBox = document.getElementById("score-box")!;
+    const scoreLoading = document.getElementById("score-loading")!;
+    const scoreFinal = document.getElementById("score-final")!;
+    const scoreError = document.getElementById("score-error")!;
+
+    section.classList.remove("hidden");
+    scoreBox.removeAttribute("data-score");
+    scoreLoading.classList.remove("hidden");
+    scoreFinal.classList.add("hidden");
+    scoreFinal.classList.remove("reveal");
+    scoreError.classList.add("hidden");
+
+    document.getElementById("scan-domain")!.textContent = domain;
+
+    CHECK_ORDER.forEach((id) => {
+      const card = document.querySelector(`[data-check="${id}"]`)!;
+      card.querySelector(".card-shimmer")!.classList.remove("hidden");
+      const content = card.querySelector(".card-content") as HTMLElement;
+      content.classList.add("hidden");
+      content.classList.remove("reveal");
+      card.querySelector(".card-details")!.classList.add("hidden");
+      const btn = card.querySelector(".details-btn") as HTMLButtonElement;
+      btn.setAttribute("aria-expanded", "false");
+      btn.querySelector(".chevron")!.classList.remove("rotated");
+    });
+
+    setTimeout(
+      () => section.scrollIntoView({ behavior: "smooth", block: "start" }),
+      100,
+    );
+
+    let checks: CheckResult[];
+    try {
+      const res = await fetch(`/api/scan?url=${encodeURIComponent(url)}`);
+      if (!res.ok) throw new Error("scan_failed");
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      checks = data.checks as CheckResult[];
+    } catch {
+      showError();
+      return;
+    }
+
+    const result = buildScanResult(url, checks);
+
+    CHECK_ORDER.forEach((id, i) => {
+      setTimeout(() => {
+        const check = checks.find((c) => c.id === id);
+        if (check) revealCheck(id, check);
+      }, REVEAL_DELAYS[i]);
+    });
+
+    setTimeout(() => {
+      scoreLoading.classList.add("hidden");
+      scoreFinal.classList.remove("hidden");
+      scoreFinal.classList.add("reveal");
+
+      const color = SCORE_COLORS[result.score];
+      const badge = document.getElementById("score-badge") as HTMLElement;
+      const dot = document.getElementById("score-dot") as HTMLElement;
+      const levelText = document.getElementById("score-level-text")!;
+      dot.style.background = color;
+      levelText.textContent = SCORE_LABELS[result.score];
+      badge.setAttribute("data-score", result.score);
+      document.getElementById("score-headline")!.textContent = result.headline;
+      document.getElementById("score-subline")!.textContent = result.subline;
+      scoreBox.setAttribute("data-score", result.score);
+    }, SCORE_DELAY);
+  }
+
+  function showError() {
+    const scoreBox = document.getElementById("score-box")!;
+    const scoreLoading = document.getElementById("score-loading")!;
+    const scoreError = document.getElementById("score-error")!;
+    scoreLoading.classList.add("hidden");
+    scoreError.classList.remove("hidden");
+    scoreBox.setAttribute("data-score", "danger");
+  }
+
+  function revealCheck(id: CheckId, check: CheckResult) {
+    const card = document.querySelector(`[data-check="${id}"]`)!;
+    const shimmer = card.querySelector(".card-shimmer")!;
+    const content = card.querySelector(".card-content") as HTMLElement;
+    const dot = card.querySelector(".status-dot") as HTMLElement;
+    const detailTiles = card.querySelector(".detail-tiles")!;
+
+    card.querySelector(".card-title")!.textContent = check.label;
+    card.querySelector(".card-summary")!.textContent = check.summary;
+    dot.style.background = SCORE_COLORS[check.score];
+
+    detailTiles.innerHTML = "";
+    for (const [key, val] of Object.entries(check.details)) {
+      const tile = document.createElement("div");
+      tile.className = "detail-tile";
+      const keyEl = document.createElement("span");
+      keyEl.className = "tile-key";
+      keyEl.textContent = key;
+      const valEl = document.createElement("span");
+      valEl.className = "tile-val";
+      valEl.textContent = val;
+      tile.append(keyEl, valEl);
+      detailTiles.appendChild(tile);
+    }
+
+    shimmer.classList.add("hidden");
+    content.classList.remove("hidden");
+    content.classList.add("reveal");
+  }
+
+  document.addEventListener("click", (e: MouseEvent) => {
+    const btn = (e.target as HTMLElement).closest(".details-btn");
+    if (!btn) return;
+    const card = btn.closest(".check-card")!;
+    const details = card.querySelector(".card-details")!;
+    const expanded = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", String(!expanded));
+    details.classList.toggle("hidden");
+    btn.querySelector(".chevron")!.classList.toggle("rotated");
+  });
+</script>
+
+<style>
+  .scan-result {
+    padding: var(--space-4) var(--space-8) var(--space-16);
+  }
+
+  .result-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* ── Score Box ───────────────────────────────────────────── */
+
+  .score-box {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    background: var(--color-surface);
+    text-align: center;
+    transition:
+      border-color var(--transition-base),
+      background var(--transition-base);
+  }
+
+  .score-box[data-score="trusted"] { border-color: var(--color-signal-green); }
+  .score-box[data-score="warning"]  { border-color: var(--color-signal-yellow); }
+  .score-box[data-score="danger"]   { border-color: var(--color-signal-red); }
+
+  .scan-label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .scanning-text {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── Score Final ─────────────────────────────────────────── */
+
+  .score-final {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .score-final.reveal {
+    animation: fadeIn 400ms ease forwards;
+  }
+
+  .score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    border-radius: 999px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .score-badge[data-score="trusted"] {
+    background: color-mix(in srgb, var(--color-signal-green) 15%, transparent);
+    color: var(--color-signal-green);
+  }
+  .score-badge[data-score="warning"] {
+    background: color-mix(in srgb, var(--color-signal-yellow) 15%, transparent);
+    color: var(--color-signal-yellow);
+  }
+  .score-badge[data-score="danger"] {
+    background: color-mix(in srgb, var(--color-signal-red) 15%, transparent);
+    color: var(--color-signal-red);
+  }
+
+  .score-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  #score-headline {
+    font-size: 1.9rem;
+    color: var(--color-text);
+  }
+
+  .score-subline {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .score-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) 0;
+  }
+
+  .error-title {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .error-sub {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  /* ── Check Cards ─────────────────────────────────────────── */
+
+  .checks-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .check-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    overflow: hidden;
+  }
+
+  /* Shimmer */
+
+  .card-shimmer {
+    padding: var(--space-4) var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .shimmer-line {
+    height: 12px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-raised) 25%,
+      var(--color-border) 50%,
+      var(--color-surface-raised) 75%
+    );
+    background-size: 400px 100%;
+    animation: shimmer 1.4s ease infinite;
+  }
+
+  .shimmer-title {
+    width: 38%;
+  }
+  .shimmer-text {
+    width: 62%;
+  }
+
+  /* Card Content */
+
+  .card-content.reveal {
+    animation: fadeIn 350ms ease forwards;
+  }
+
+  .card-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    gap: var(--space-4);
+  }
+
+  .card-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .card-summary {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+
+  /* Details Button */
+
+  .details-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .details-btn:hover {
+    color: var(--color-text);
+  }
+
+  .chevron {
+    transition: transform var(--transition-fast);
+  }
+
+  .chevron.rotated {
+    transform: rotate(180deg);
+  }
+
+  /* Card Details */
+
+  .card-details {
+    border-top: 1px solid var(--color-border-subtle);
+    padding: var(--space-3) var(--space-6) var(--space-4);
+  }
+
+  .detail-tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-6);
+  }
+
+  /* :global because these elements are created via JS and don't get Astro's scope attribute */
+  :global(.detail-tile) {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: var(--space-1) 0;
+    min-width: 90px;
+  }
+
+  :global(.tile-key) {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  :global(.tile-val) {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  /* ── Responsive ──────────────────────────────────────────── */
+
+  @media (max-width: 480px) {
+    .scan-result {
+      padding: var(--space-8) var(--space-4) var(--space-12);
+    }
+
+    .card-main {
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .card-details {
+      padding: var(--space-3) var(--space-4) var(--space-3);
+    }
+
+    .card-shimmer {
+      padding: var(--space-3) var(--space-4);
+    }
+  }
+</style>

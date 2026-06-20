@@ -12,7 +12,7 @@
       Paste any URL and get an instant trust score. No account needed.
     </p>
 
-    <form class="scan-form" action="/scan" method="get">
+    <form class="scan-form" id="scan-form">
       <div class="input-wrap">
         <svg
           class="input-icon"
@@ -37,7 +37,7 @@
             stroke-linejoin="round"></path>
         </svg>
         <input
-          type="url"
+          type="text"
           name="url"
           placeholder="https://example.com"
           required
@@ -55,6 +55,20 @@
     </p>
   </div>
 </section>
+
+<script>
+  const form = document.getElementById('scan-form') as HTMLFormElement;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = form.querySelector('input[name="url"]') as HTMLInputElement;
+    let url = input.value.trim();
+    if (!url) return;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    document.dispatchEvent(new CustomEvent('scan:start', { detail: { url } }));
+  });
+</script>
 
 <style>
   .hero {
