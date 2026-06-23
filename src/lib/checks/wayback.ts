@@ -5,6 +5,15 @@ type FetchResult =
   | { status: 'not_found' }
   | { status: 'error' };
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), ms)
+    ),
+  ]);
+}
+
 function parseTimestamp(ts: string): string {
   return new Date(
     `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`
@@ -13,9 +22,12 @@ function parseTimestamp(ts: string): string {
 
 async function fetchFirstSnapshot(domain: string, signal: AbortSignal): Promise<FetchResult> {
   try {
-    const res = await fetch(
-      `https://web.archive.org/cdx/search/cdx?url=${domain}&output=json&limit=1&fl=timestamp`,
-      { signal }
+    const res = await withTimeout(
+      fetch(
+        `https://web.archive.org/cdx/search/cdx?url=${domain}&output=json&limit=1&fl=timestamp`,
+        { signal }
+      ),
+      4000
     );
     const data = await res.json();
     if (Array.isArray(data) && data.length >= 2) {
@@ -29,9 +41,9 @@ async function fetchFirstSnapshot(domain: string, signal: AbortSignal): Promise<
 
 async function fetchLatestSnapshot(domain: string, signal: AbortSignal): Promise<FetchResult> {
   try {
-    const res = await fetch(
-      `https://archive.org/wayback/available?url=${domain}`,
-      { signal }
+    const res = await withTimeout(
+      fetch(`https://archive.org/wayback/available?url=${domain}`, { signal }),
+      4000
     );
     const data = await res.json();
     const ts = data?.archived_snapshots?.closest?.timestamp;
