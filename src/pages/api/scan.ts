@@ -4,12 +4,13 @@ import { checkSSL } from '../../lib/checks/ssl';
 import { checkDomainAge } from '../../lib/checks/domainAge';
 import { checkWayback } from '../../lib/checks/wayback';
 import { checkSafeBrowsing } from '../../lib/checks/safebrowsing';
+import { checkHeuristics } from '../../lib/checks/heuristics';
 
 export const prerender = false;
 
 const TIMEOUT_MS = 8000;
 
-const CHECK_IDS = ['ssl', 'domainAge', 'safebrowsing', 'wayback'] as const;
+const CHECK_IDS = ['ssl', 'domainAge', 'heuristics', 'safebrowsing', 'wayback'] as const;
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -43,6 +44,7 @@ export const GET: APIRoute = async ({ url: reqUrl }) => {
     const results = await Promise.allSettled([
       checkSSL(hostname, controller.signal),
       checkDomainAge(hostname, controller.signal),
+      checkHeuristics(rawUrl),
       checkSafeBrowsing(rawUrl, controller.signal),
       checkWayback(hostname, controller.signal),
     ]);

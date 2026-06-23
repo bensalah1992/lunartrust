@@ -66,9 +66,7 @@ async function tryRdapEndpoint(url: string, signal: AbortSignal): Promise<RdapDa
   }
 }
 
-// Base URLs sourced from IANA RDAP bootstrap (https://data.iana.org/rdap/dns.json)
-// plus well-known registry endpoints for ccTLDs not yet in the bootstrap.
-// Used as fallback when rdap.org cannot redirect (registry doesn't participate).
+// RDAP registry endpoints — fallback when rdap.org can't redirect
 const RDAP_REGISTRY: Record<string, string> = {
   // Verisign gTLDs
   '.com':  'https://rdap.verisign.com/com/v1/domain/',

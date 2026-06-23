@@ -1,5 +1,5 @@
 ---
-const CHECK_IDS = ["ssl", "domainAge", "safebrowsing", "wayback"] as const;
+const CHECK_IDS = ["ssl", "domainAge", "heuristics", "safebrowsing", "wayback"] as const;
 ---
 
 <section
@@ -84,12 +84,11 @@ const CHECK_IDS = ["ssl", "domainAge", "safebrowsing", "wayback"] as const;
   import { buildScanResult } from "../lib/scoring";
   import type { CheckResult, ScoreLevel } from "../types/scan";
 
-  type CheckId = "ssl" | "domainAge" | "safebrowsing" | "wayback";
+  type CheckId = "ssl" | "domainAge" | "heuristics" | "safebrowsing" | "wayback";
 
-
-  const CHECK_ORDER: CheckId[] = ["ssl", "domainAge", "safebrowsing", "wayback"];
-  const REVEAL_DELAYS = [300, 600, 1200, 1800];
-  const SCORE_DELAY = 1900;
+  const CHECK_ORDER: CheckId[] = ["ssl", "domainAge", "heuristics", "safebrowsing", "wayback"];
+  const REVEAL_DELAYS = [300, 600, 900, 1400, 1900];
+  const SCORE_DELAY = 2000;
 
   const SCORE_LABELS: Record<ScoreLevel, string> = {
     trusted: "TRUSTED",
