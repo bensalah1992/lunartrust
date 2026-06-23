@@ -66,7 +66,7 @@
   function isValidUrl(url: string): boolean {
     try {
       const { hostname } = new URL(url);
-      return /^[^\s.]+\.[^\s.]{2,}$/.test(hostname);
+      return /^[^\s]+\.[a-z]{2,}$/i.test(hostname);
     } catch {
       return false;
     }

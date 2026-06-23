@@ -37,7 +37,11 @@ export async function checkSafeBrowsing(url: string, signal: AbortSignal): Promi
       }
     );
 
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`Safe Browsing API error ${res.status}:`, body);
+      throw new Error(`API error: ${res.status}`);
+    }
 
     const data = await res.json();
     const threats: { threatType: string }[] = data.matches ?? [];
