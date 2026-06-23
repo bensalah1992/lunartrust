@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout
@@ -15,11 +15,12 @@ import Layout from '../layouts/Layout.astro';
     <section>
       <h2>A note from the developer</h2>
       <p>
-        I'm a solo developer and I built LunarTrust with one goal: give anyone a fast,
-        honest way to check whether a URL is safe — without handing over their data in
-        the process. This page explains exactly what happens when you scan a URL,
-        including the parts I'm not fully in control of. I'd rather be transparent about
-        the limits than pretend this tool is more private than it actually is.
+        I'm a solo developer and I built LunarTrust with one goal: give anyone a
+        fast, honest way to check whether a URL is safe, without handing over
+        their data in the process. This page explains exactly what happens when
+        you scan a URL, including the parts I'm not fully in control of. I'd
+        rather be transparent about the limits than pretend this tool is more
+        private than it actually is.
       </p>
     </section>
 
@@ -37,23 +38,25 @@ import Layout from '../layouts/Layout.astro';
     <section>
       <h2>How a scan works — step by step</h2>
       <p>
-        When you submit a URL, it is sent from your browser to a serverless function
-        running on Netlify's infrastructure. The URL is held in memory only for the
-        duration of the scan — typically under 8 seconds — and is never written to a
-        database or disk. Below is exactly what happens for each of the five checks,
-        and what data (if any) leaves that function.
+        When you submit a URL, it is sent from your browser to a serverless
+        function running on Netlify's infrastructure. The URL is held in memory
+        only for the duration of the scan and is never written to a database or
+        disk. Below is exactly what happens for each of the five checks, and
+        what data (if any) leaves that function.
       </p>
 
       <div class="check-list">
         <div class="check">
           <h3>URL Analysis (heuristics)</h3>
-          <p class="privacy-level private">100% local — no data sent anywhere</p>
+          <p class="privacy-level private">
+            100% local — no data sent anywhere
+          </p>
           <p>
-            This check runs entirely inside the Netlify function. It analyses the URL
-            structure using pattern-matching logic — looking for phishing patterns,
-            suspicious domain names, dangerous file extensions, brand impersonation,
-            and more. No external service is contacted. Your URL does not leave the
-            function for this check.
+            This check runs entirely inside the Netlify function. It analyses
+            the URL structure using pattern-matching logic, looking for phishing
+            patterns, suspicious domain names, dangerous file extensions, brand
+            impersonation, and more. No external service is contacted. Your URL
+            does not leave the function for this check.
           </p>
         </div>
 
@@ -61,18 +64,23 @@ import Layout from '../layouts/Layout.astro';
           <h3>Google Safe Browsing API</h3>
           <p class="privacy-level third-party">Full URL is sent to Google</p>
           <p>
-            The full URL you scanned is submitted to Google's Safe Browsing API, which
-            checks it against Google's threat database of known malware and phishing
-            sites. <strong>This means Google receives the URL.</strong> I have no
-            control over what Google does with it on their end — their Privacy Policy
-            applies. I included this check because it is one of the most effective
-            publicly available threat databases. But you should know the trade-off: if
-            you are scanning a URL that you consider sensitive, Google will see it. The
-            other four checks — including the fully local heuristics analysis — still
-            run regardless.
+            The full URL you scanned is submitted to Google's Safe Browsing API,
+            which checks it against Google's threat database of known malware
+            and phishing sites. <strong
+              >This means Google receives the URL.</strong
+            > I have no control over what Google does with it on their end, their
+            Privacy Policy applies. I included this check because it is one of the
+            most effective publicly available threat databases. But you should know
+            the trade-off: if you are scanning a URL that you consider sensitive,
+            Google will see it. The other four checks, including the fully local heuristics
+            analysis, still run regardless.
           </p>
           <p class="policy-link">
-            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Google Privacy Policy ↗
             </a>
           </p>
@@ -80,14 +88,21 @@ import Layout from '../layouts/Layout.astro';
 
         <div class="check">
           <h3>Wayback Machine (archive.org)</h3>
-          <p class="privacy-level minimal">Domain name only — no path or query string</p>
+          <p class="privacy-level minimal">
+            Domain name only — no path or query string
+          </p>
           <p>
-            The Internet Archive is queried to check whether the domain has a recorded
-            history. I send only the bare hostname (e.g. <code>example.com</code>),
-            not the full URL with its path or query parameters.
+            The Internet Archive is queried to check whether the domain has a
+            recorded history. I send only the bare hostname (e.g. <code
+              >example.com</code
+            >), not the full URL with its path or query parameters.
           </p>
           <p class="policy-link">
-            <a href="https://archive.org/about/terms.php" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://archive.org/about/terms.php"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Internet Archive Terms ↗
             </a>
           </p>
@@ -95,22 +110,26 @@ import Layout from '../layouts/Layout.astro';
 
         <div class="check">
           <h3>Domain Age (RDAP)</h3>
-          <p class="privacy-level minimal">Domain name only — public registry data</p>
+          <p class="privacy-level minimal">
+            Domain name only — public registry data
+          </p>
           <p>
-            RDAP (the modern successor to WHOIS) is queried to find out when the domain
-            was registered. This is publicly available data held by domain registries.
-            Only the domain name is sent.
+            RDAP (the modern successor to WHOIS) is queried to find out when the
+            domain was registered. This is publicly available data held by
+            domain registries. Only the domain name is sent.
           </p>
         </div>
 
         <div class="check">
           <h3>SSL Certificate</h3>
-          <p class="privacy-level minimal">Netlify's server connects to the target host</p>
+          <p class="privacy-level minimal">
+            Netlify's server connects to the target host
+          </p>
           <p>
-            A TLS handshake is made with the scanned domain to read its public SSL
-            certificate — expiry date and issuer. The target server will see a
-            connection from Netlify's IP address, not yours. No credentials or private
-            data are exchanged in this step.
+            A TLS handshake is made with the scanned domain to read its public
+            SSL certificate, expiry date and issuer. The target server will see
+            a connection from Netlify's IP address, not yours. No credentials or
+            private data are exchanged in this step.
           </p>
         </div>
       </div>
@@ -119,14 +138,18 @@ import Layout from '../layouts/Layout.astro';
     <section>
       <h2>Hosting</h2>
       <p>
-        LunarTrust runs on Netlify. The scan logic executes as a Netlify serverless
-        function, not on a server I own or operate. As with any cloud provider,
-        Netlify's infrastructure handles incoming requests and may retain technical
-        metadata (IP address, request headers) as part of normal operation. I do not
-        have access to those logs.
+        LunarTrust runs on Netlify. The scan logic executes as a Netlify
+        serverless function, not on a server I own or operate. As with any cloud
+        provider, Netlify's infrastructure handles incoming requests and may
+        retain technical metadata (IP address, request headers) as part of
+        normal operation. I do not have access to those logs.
       </p>
       <p class="policy-link">
-        <a href="https://www.netlify.com/privacy/" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://www.netlify.com/privacy/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Netlify Privacy Policy ↗
         </a>
       </p>
@@ -135,10 +158,11 @@ import Layout from '../layouts/Layout.astro';
     <section>
       <h2>Your rights (GDPR / DSGVO)</h2>
       <p>
-        Because I collect no personal data, there is nothing to access, correct, or
-        delete on my side. For data processed by third-party services (Google, Internet
-        Archive, Netlify), please refer to their respective privacy policies linked
-        above. If you have questions about this page, feel free to reach out:
+        Because I collect no personal data, there is nothing to access, correct,
+        or delete on my side. For data processed by third-party services
+        (Google, Internet Archive, Netlify), please refer to their respective
+        privacy policies linked above. If you have questions about this page,
+        feel free to reach out:
       </p>
       <p class="contact">
         <a href="mailto:ab.bensalah@pm.me">ab.bensalah@pm.me</a>
@@ -148,9 +172,9 @@ import Layout from '../layouts/Layout.astro';
     <section>
       <h2>Changes</h2>
       <p>
-        This policy may be updated as the project evolves. Changes are reflected by the
-        date at the top of this page. I will not quietly weaken the privacy guarantees
-        described here — any reduction will be clearly noted.
+        This policy may be updated as the project evolves. Changes are reflected
+        by the date at the top of this page. I will not quietly weaken the
+        privacy guarantees described here. Any reduction will be clearly noted.
       </p>
     </section>
   </article>
@@ -217,7 +241,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   ul li::before {
-    content: '–';
+    content: "–";
     position: absolute;
     left: 0;
     color: var(--color-text-muted);
