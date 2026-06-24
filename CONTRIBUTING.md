@@ -1,6 +1,6 @@
 # Contributing to ProjectLunar
 
-Thanks for taking the time to contribute. ProjectLunar is a URL trust scanner built for everyday users — simple, fast, and privacy-first.
+Thanks for taking the time to contribute. ProjectLunar is a URL trust scanner built for everyday users —>> simple, fast, and privacy-first.
 
 ## Getting Started
 
@@ -20,7 +20,7 @@ The dev server starts at `http://localhost:4321`.
 ## Submitting a Pull Request
 
 1. Create a branch off `main`: `git checkout -b feat/your-thing`
-2. Make your changes — keep commits focused, one concern per commit.
+2. Make your changes >>> keep commits focused, one concern per commit.
 3. Run `npm run build` to confirm no TypeScript or Astro errors before opening a PR.
 4. Open a PR against `main` with a clear title using the commit convention below and a short description of what changed and why.
 
@@ -40,11 +40,11 @@ These are concrete areas where help is welcome:
 
 - **TypeScript** for all logic files — strict mode, no `any`.
 - **Astro components** (`.astro`) for all UI.
-- **CSS variables only** — never hardcode colors. Signal colors (green/yellow/red) are reserved for scan results.
+- **CSS variables only** —> never hardcode colors. Signal colors (green/yellow/red) are reserved for scan results.
 - **PascalCase** for component files, **camelCase** for variables and functions.
 - No external UI libraries or JS animation packages.
-- Keep components focused — prefer smaller, single-purpose files.
-- Comments only when the *why* is non-obvious.
+- Keep components focused >>> prefer smaller, single-purpose files.
+- Comments only when the _why_ is non-obvious.
 
 ## Security & Privacy
 
@@ -62,4 +62,4 @@ Open an issue on GitHub with:
 - What verdict you got vs. what you expected.
 - Browser and OS if it's a display/UX bug.
 
-For security vulnerabilities, please email [ab.bensalah@protonmail.com](mailto:ab.bensalah@protonmail.com) instead of opening a public issue.
+For security vulnerabilities, please email [ab.bensalah@protonmail.com](mailto:ab.bensalah@pm.me) instead of opening a public issue.

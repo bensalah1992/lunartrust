@@ -24,7 +24,7 @@ Five checks run in parallel on every scan:
 
 ## Privacy
 
-Privacy is the core principle behind LunarTrust. I do not store, log, or track any URLs you scan — not in a database, not in any log file. The URL Analysis check is fully local and never contacts an external service.
+Privacy is the core principle behind LunarTrust. I do not store, log, or track any URLs you scan, not in a database, not in any log file. The URL Analysis check is fully local and never contacts an external service.
 
 The one honest exception: the Google Safe Browsing check sends the URL to Google's API. I include it because it is one of the most effective threat databases available, but I want to be upfront about the trade-off. If you consider a URL sensitive, the other four checks still run independently. The full details are in the [Privacy Policy](/privacy).
 
@@ -60,7 +60,7 @@ Open [http://localhost:4321](http://localhost:4321).
 3. Go to **APIs & Services → Credentials** and create an API key
 4. Add it to your `.env` file as shown above
 
-The app works without the key — that check will return unknown and not affect the score.
+The app works without the key. That check will return unknown and not affect the score.
 
 ## Contributing
 
