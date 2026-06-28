@@ -82,9 +82,7 @@ const CHECK_IDS = ["ssl", "domainAge", "heuristics", "safebrowsing", "wayback"] 
 
 <script>
   import { buildScanResult } from "../lib/scoring";
-  import type { CheckResult, ScoreLevel } from "../types/scan";
-
-  type CheckId = "ssl" | "domainAge" | "heuristics" | "safebrowsing" | "wayback";
+  import type { CheckId, CheckResult, ScoreLevel } from "../types/scan";
 
   const CHECK_ORDER: CheckId[] = ["ssl", "domainAge", "heuristics", "safebrowsing", "wayback"];
   const REVEAL_DELAYS = [300, 600, 900, 1400, 1900];

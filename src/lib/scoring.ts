@@ -1,13 +1,12 @@
 import type { CheckResult, ScoreLevel, ScanResult } from '../types/scan';
 
-const HEADLINES: Record<ScoreLevel, string> = {
+const HEADLINES: Record<Exclude<ScoreLevel, 'unknown'>, string> = {
   trusted: 'This website appears safe',
   warning: 'Proceed with caution',
   danger: 'This website is dangerous',
-  unknown: 'This website appears safe',
 };
 
-export function computeScore(checks: CheckResult[]): ScoreLevel {
+export function computeScore(checks: CheckResult[]): Exclude<ScoreLevel, 'unknown'> {
   if (checks.some((c) => c.score === 'danger')) return 'danger';
   if (checks.some((c) => c.score === 'warning')) return 'warning';
   return 'trusted';

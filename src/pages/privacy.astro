@@ -40,7 +40,7 @@ import Layout from "../layouts/Layout.astro";
       <h2>How a scan works — step by step</h2>
       <p>
         When you submit a URL, it is sent from your browser to a serverless
-        function running on Netlify's infrastructure. The URL is held in memory
+        function running on Cloudflare's infrastructure. The URL is held in memory
         only for the duration of the scan and is never written to a database or
         disk. Below is exactly what happens for each of the five checks, and
         what data (if any) leaves that function.
@@ -53,7 +53,7 @@ import Layout from "../layouts/Layout.astro";
             100% local — no data sent anywhere
           </p>
           <p>
-            This check runs entirely inside the Netlify function. It analyses
+            This check runs entirely inside the Cloudflare Worker. It analyses
             the URL structure using pattern-matching logic, looking for phishing
             patterns, suspicious domain names, dangerous file extensions, brand
             impersonation, and more. No external service is contacted. Your URL
@@ -124,13 +124,13 @@ import Layout from "../layouts/Layout.astro";
         <div class="check">
           <h3>SSL Certificate</h3>
           <p class="privacy-level minimal">
-            Netlify's server connects to the target host
+            Cloudflare's server sends a request to the target host
           </p>
           <p>
-            A TLS handshake is made with the scanned domain to read its public
-            SSL certificate, expiry date and issuer. The target server will see
-            a connection from Netlify's IP address, not yours. No credentials or
-            private data are exchanged in this step.
+            An HTTPS request is made to the scanned domain to verify that a
+            valid SSL connection can be established. The target server will see
+            a connection from Cloudflare's IP address, not yours. No credentials
+            or private data are exchanged in this step.
           </p>
         </div>
       </div>
@@ -139,19 +139,19 @@ import Layout from "../layouts/Layout.astro";
     <section>
       <h2>Hosting</h2>
       <p>
-        LunarTrust runs on Netlify. The scan logic executes as a Netlify
-        serverless function, not on a server I own or operate. As with any cloud
-        provider, Netlify's infrastructure handles incoming requests and may
+        LunarTrust runs on Cloudflare Pages. The scan logic executes as a
+        Cloudflare Worker, not on a server I own or operate. As with any cloud
+        provider, Cloudflare's infrastructure handles incoming requests and may
         retain technical metadata (IP address, request headers) as part of
         normal operation. I do not have access to those logs.
       </p>
       <p class="policy-link">
         <a
-          href="https://www.netlify.com/privacy/"
+          href="https://www.cloudflare.com/privacypolicy/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Netlify Privacy Policy ↗
+          Cloudflare Privacy Policy ↗
         </a>
       </p>
     </section>
@@ -161,7 +161,7 @@ import Layout from "../layouts/Layout.astro";
       <p>
         Because I collect no personal data, there is nothing to access, correct,
         or delete on my side. For data processed by third-party services
-        (Google, Internet Archive, Netlify), please refer to their respective
+        (Google, Internet Archive, Cloudflare), please refer to their respective
         privacy policies linked above. If you have questions about this page,
         feel free to reach out:
       </p>
