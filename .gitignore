@@ -25,3 +25,4 @@ pnpm-debug.log*
 
 # Local dev tool folders
 .netlify
+.wrangler
